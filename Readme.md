@@ -9,15 +9,12 @@
 - how many minutes should each break have. **Default: 5 min**  
 
 **-l**, **--long**  
-- how many minutes should each long break have. **Default: 5 min**  
-
-**-c,** **--cycles**  
-- how many worky cycles should pass before a larger break. **Default: 4 cycles.**  
+- how many minutes should each long break have. **Default: 15 min**  
 
 ## Sample use  
 - Sets a pomodoro timer with 2 work cycles each 20 minutes  
 ```
-pomodoro -c2 -w20 -l15 -b3
+pomodoro -w20 -l15 -b3
 ```
 # Why?
 Even though the app that I use for time tracking has a pomodoro mode, the mode is fairly lack luster, mainly what I miss is a notification for end and start of breaks.
