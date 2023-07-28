@@ -17,10 +17,9 @@ typedef struct Pomodoro{
     
     int workCycles;
     int breakCycles;
-    const int WORK_LENGTH;
+    const unsigned int WORK_LENGTH;
 const int BREAK_LENGTH;
-    const int LONG_BREAK_LENGTH;
-    const int CYCLES;
+    const unsigned int LONG_BREAK_LENGTH;
     int valid;
 }Pomodoro;
 

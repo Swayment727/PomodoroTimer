@@ -16,10 +16,9 @@ Pomodoro _pomodoro_create( Arguments args ){
                         .lastBreakPointTime = currentTime,
                         .totalWorkTime = 0,
                         .state = inactive,
-                        .WORK_LENGTH = args.workTime != -1 ? args.workTime : 25, 
-                        .BREAK_LENGTH = args.breakTime != -1 ? args.breakTime : 5, 
-                        .CYCLES = args.longTime != -1 ? args.longTime : 15, 
-                        .LONG_BREAK_LENGTH = 15,
+                        .WORK_LENGTH = args.workTime == -1 ? 25 : args.workTime, 
+                        .BREAK_LENGTH = args.breakTime == -1 ? 5 : args.breakTime, 
+                        .LONG_BREAK_LENGTH = args.longTime == -1 ? 15 : args.longTime,
                         .workCycles = 0,
                         .breakCycles = 0};
     strftime(output.formatedStartTime, sizeof(output.formatedStartTime), "%c",localtime(&currentTime));
@@ -29,7 +28,7 @@ Pomodoro _pomodoro_create( Arguments args ){
     return output;
 }
 
-void _pomodoro_clear(){
+void _pomodoro_clear(void){
     printf("\033[2J");
     printf("\033[0;0H");
 }
@@ -41,8 +40,11 @@ void _pomodoro_display( Pomodoro *p ){
     if( p->state == workTime ){
         printf("Work time: %zu:%zu/%d:00\n",passedSeconds / 60, passedSeconds % 60, p->WORK_LENGTH );
     }
-    else{
+    else if ( p->state == breakTime ){
         printf("Break time: %zu:%zu/%d:00\n",passedSeconds / 60, passedSeconds % 60, p->BREAK_LENGTH);
+    }
+    else if ( p->state == longBreakTime){
+        printf("Long break time: %zu:%zu/%d:00\n",passedSeconds / 60, passedSeconds % 60, p->LONG_BREAK_LENGTH);
     }
     printf("Work cycles: %d\nBreakCycles: %d\n",p->workCycles, p->breakCycles);
     printf("Work time total: %zu:%zu:%zu\n", p->totalWorkTime / 3600 ,(p->totalWorkTime % 3600) / 60,p->totalWorkTime % 60);
