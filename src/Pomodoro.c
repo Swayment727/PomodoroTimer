@@ -5,14 +5,15 @@
 #include <unistd.h>
 
 #include "Pomodoro.h"
+#include "TimeKeeper.h"
+#include "output.h"
 
 
 Pomodoro _pomodoro_create( Arguments args ){
     time_t currentTime = time(NULL);
     //TODO: extract time based logic outside into another struct with it's own "methods"
-    Pomodoro output = { .startTime = currentTime,
-                        .formatedStartTime = "",  
-                        .endTime = localtime(&currentTime),
+    Pomodoro output = { .formatedStartTime = "", 
+                        .keeper = TimeKeeper_createKeeper(),
                         .lastBreakPointTime = currentTime,
                         .totalWorkTime = 0,
                         .state = inactive,
@@ -28,13 +29,8 @@ Pomodoro _pomodoro_create( Arguments args ){
     return output;
 }
 
-void _pomodoro_clear(void){
-    printf("\033[2J");
-    printf("\033[0;0H");
-}
-
 void _pomodoro_display( Pomodoro *p ){
-    _pomodoro_clear();
+    output_clearAndSetCursour();
     printf("Started at: %s\n",p->formatedStartTime); 
     size_t passedSeconds = difftime(time(NULL), p->lastBreakPointTime);
     if( p->state == workTime ){
@@ -96,22 +92,13 @@ int pomodoro_start(Arguments args){
     if( !args.valid )
         return 1;
     while( 1 ){
-        struct timespec startTime;
-        timespec_get(&startTime,TIME_UTC);
-        
-        struct timespec endTime;
-        timespec_get(&endTime,TIME_UTC);
-        int secondRolledOver = endTime.tv_sec > startTime.tv_sec;
-        if( secondRolledOver ){
-            _pomodoro_display(&p);
-            _pomodoro_update(&p);
-        }
-
-        timespec_get(&endTime,TIME_UTC);
-        long endNs = endTime.tv_nsec;
-        thrd_sleep(&(struct timespec){.tv_sec=0,.tv_nsec=1000000000 - endNs }, NULL); 
+        TimeKeeper_startTime(&p.keeper);
         _pomodoro_display(&p);
-        _pomodoro_update(&p);
+        TimeKeeper_endTimeAndSleep(&p.keeper);
+        if( TimeKeeper_hasSecondPassed(&p.keeper) ){
+            _pomodoro_update(&p);
+            _pomodoro_display(&p);
+        }
     }  
 
     return 0;

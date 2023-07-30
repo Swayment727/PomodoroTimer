@@ -3,15 +3,16 @@
 #include <time.h>
 
 #include "Arguments.h"
+#include "TimeKeeper.h"
 
 enum PomodoroState {inactive, workTime,breakTime,longBreakTime};
 
 typedef struct Pomodoro{
-    time_t startTime;
     char formatedStartTime[128];
-    struct tm* endTime;
     time_t lastBreakPointTime;
     size_t totalWorkTime;
+
+    TimeKeeper keeper;
 
     enum PomodoroState state;
     
