@@ -21,7 +21,7 @@ Arguments input_check(int argc, char *argv[]){
         return output;
     }
     ++argv;
-    for( size_t inputFlag = 1; inputFlag < argc; inputFlag++ ){
+    for( int inputFlag = 1; inputFlag < argc; inputFlag++ ){
         const char **p_flag = flags;
         int parsedSomething = 0;
         for( size_t availableFlag = 0; availableFlag < 3; availableFlag++ ){
