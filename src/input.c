@@ -1,6 +1,8 @@
 #include <string.h> 
 #include <stdlib.h>
 #include <stdio.h>
+#include <termio.h>
+#include <unistd.h>
 
 #include "input.h"
 
@@ -43,6 +45,17 @@ Arguments input_check(int argc, char *argv[]){
         ++argv;
     }
     return output;
+}
+
+
+void input_setupPoolingInput(void){
+    struct termios term;
+    tcgetattr(STDIN_FILENO, &term);
+
+    term.c_lflag &= ~(ECHO | ICANON);
+    term.c_cc[VMIN]  = 0; 
+    term.c_cc[VTIME] = 0;
+    tcsetattr(STDIN_FILENO, TCSANOW, &term);
 }
 
 

@@ -4,8 +4,9 @@
 
 #include "Arguments.h"
 #include "TimeKeeper.h"
+#include "Menu.h"
 
-enum PomodoroState {inactive, workTime,breakTime,longBreakTime};
+enum PomodoroState {inactive, paused,quit, workTime,breakTime,longBreakTime};
 
 typedef struct Pomodoro{
     char formatedStartTime[128];
@@ -14,6 +15,9 @@ typedef struct Pomodoro{
 
     TimeKeeper keeper;
 
+    Menu menu;
+
+    enum PomodoroState lastState;
     enum PomodoroState state;
     
     int workCycles;
