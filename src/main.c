@@ -36,6 +36,6 @@ int main(int argc, char *argv[]){
     if( !parsedArguments.valid ){
        return EXIT_FAILURE; 
     }
-    pomodoro_start(parsedArguments);
+    Pomodoro_start(parsedArguments);
     return EXIT_SUCCESS;
 }
