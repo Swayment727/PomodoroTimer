@@ -30,6 +30,13 @@ int _pomodoro_unpause(void * pomodoro){
     return 1;
 }
 
+int _pomodoro_quit(void * pomodoro){
+    Pomodoro * p = (Pomodoro *)pomodoro;
+    p->state = quit;
+    return 1;
+}
+
+
 Pomodoro _pomodoro_create( Arguments args ){
     time_t currentTime = time(NULL);
     Pomodoro output = { .formatedStartTime = "", 
@@ -43,9 +50,9 @@ Pomodoro _pomodoro_create( Arguments args ){
                         .LONG_BREAK_LENGTH = args.longTime == -1 ? 15 : args.longTime,
                         .workCycles = 0,
                         .breakCycles = 0};
-    //TODO: this will leak, since I'm not calling free, add a function to call it from pomodoro
     Menu_addMenu(&output.menu,"Pause",_pomodoro_pause);
     Menu_addMenu(&output.menu,"Unpause",_pomodoro_unpause);
+    Menu_addMenu(&output.menu,"Quit",_pomodoro_quit);
     strftime(output.formatedStartTime, sizeof(output.formatedStartTime), "%c",localtime(&currentTime));
     if( currentTime == (time_t)(-1) ){
         output.valid = 0;
@@ -75,7 +82,7 @@ void _pomodoro_display( Pomodoro *p ){
             break;
     }
     printf("Work cycles: %d\nBreakCycles: %d\n",p->workCycles, p->breakCycles);
-    printf("Work time total: %zu:%zu:%zu\n", p->totalWorkTime / 3600 ,(p->totalWorkTime % 3600) / 60,p->totalWorkTime % 60);
+    printf("Work time total: %zuh:%zum:%zus\n", p->totalWorkTime / 3600 ,(p->totalWorkTime % 3600) / 60,p->totalWorkTime % 60);
 }
 
 void _pomodoro_work( Pomodoro *p, size_t passedMinutes ){
@@ -108,16 +115,16 @@ void _pomodoro_break( Pomodoro *p, size_t passedMinutes, size_t breakLength ){
 void _pomodoro_update( Pomodoro *p ){ 
     size_t passedMinutes = (time(NULL) - p->lastBreakPointTime) / 60;
     switch(p->state){
-        case(workTime):
+        case( workTime ):
             _pomodoro_work(p,passedMinutes);
             break;
-        case(breakTime):
+        case( breakTime ):
             _pomodoro_break(p,passedMinutes,p->BREAK_LENGTH);
             break;
-        case(longBreakTime):
+        case( longBreakTime ):
            _pomodoro_break(p,passedMinutes,p->LONG_BREAK_LENGTH);
             break;
-        case(paused):
+        case( paused ):
             p->pausedLastTime.tm_sec += 1;
             break;
         default:
@@ -131,7 +138,7 @@ int pomodoro_start(Arguments args){
     p.state = workTime;
     if( !args.valid )
         return 1;
-    while( 1 ){
+    while( p.state != quit ){
         TimeKeeper_startTime(&p.keeper);
         _pomodoro_display(&p);
         Menu_cycle(&p.menu,&p);
@@ -141,7 +148,8 @@ int pomodoro_start(Arguments args){
             _pomodoro_display(&p);
         }
     }  
-
+    Menu_destroy(&p.menu);
+    output_writeToAFile(&p);
     return 0;
 }
 
