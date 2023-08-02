@@ -10,7 +10,7 @@
 #include "output.h"
 #include "input.h"
 
-int _pomodoro_pause(void * pomodoro){
+int _Pomodoro_pause(void * pomodoro){
     Pomodoro * p = (Pomodoro *)pomodoro;
     if( p->state != paused ){
         p->lastState = p->state;
@@ -21,7 +21,7 @@ int _pomodoro_pause(void * pomodoro){
 }
 
 
-int _pomodoro_unpause(void * pomodoro){
+int _Pomodoro_unpause(void * pomodoro){
     Pomodoro * p = (Pomodoro *)pomodoro;
     if( p->state == paused ){
         p->state = p->lastState;
@@ -30,14 +30,14 @@ int _pomodoro_unpause(void * pomodoro){
     return 1;
 }
 
-int _pomodoro_quit(void * pomodoro){
+int _Pomodoro_quit(void * pomodoro){
     Pomodoro * p = (Pomodoro *)pomodoro;
     p->state = quit;
     return 1;
 }
 
 
-Pomodoro _pomodoro_create( Arguments args ){
+Pomodoro _Pomodoro_create( Arguments args ){
     time_t currentTime = time(NULL);
     Pomodoro output = { .formatedStartTime = "", 
                         .keeper = TimeKeeper_createKeeper(),
@@ -50,9 +50,9 @@ Pomodoro _pomodoro_create( Arguments args ){
                         .LONG_BREAK_LENGTH = args.longTime == -1 ? 15 : args.longTime,
                         .workCycles = 0,
                         .breakCycles = 0};
-    Menu_addMenu(&output.menu,"Pause",_pomodoro_pause);
-    Menu_addMenu(&output.menu,"Unpause",_pomodoro_unpause);
-    Menu_addMenu(&output.menu,"Quit",_pomodoro_quit);
+    Menu_addMenu(&output.menu,"Pause",_Pomodoro_pause);
+    Menu_addMenu(&output.menu,"Unpause",_Pomodoro_unpause);
+    Menu_addMenu(&output.menu,"Quit",_Pomodoro_quit);
     strftime(output.formatedStartTime, sizeof(output.formatedStartTime), "%c",localtime(&currentTime));
     if( currentTime == (time_t)(-1) ){
         output.valid = 0;
@@ -61,7 +61,7 @@ Pomodoro _pomodoro_create( Arguments args ){
 }
 
 
-void _pomodoro_display( Pomodoro *p ){
+void _Pomodoro_display( Pomodoro *p ){
     output_clearAndSetCursour();
     printf("Started at: %s\n",p->formatedStartTime); 
     size_t passedSeconds = difftime(time(NULL), p->lastBreakPointTime);
@@ -85,7 +85,7 @@ void _pomodoro_display( Pomodoro *p ){
     printf("Work time total: %zuh:%zum:%zus\n", p->totalWorkTime / 3600 ,(p->totalWorkTime % 3600) / 60,p->totalWorkTime % 60);
 }
 
-void _pomodoro_work( Pomodoro *p, size_t passedMinutes ){
+void _Pomodoro_work( Pomodoro *p, size_t passedMinutes ){
     if( passedMinutes >= p->WORK_LENGTH  ){
         p->workCycles += 1;
         if( p->workCycles == 4 ){
@@ -103,7 +103,7 @@ void _pomodoro_work( Pomodoro *p, size_t passedMinutes ){
     }
 }
 
-void _pomodoro_break( Pomodoro *p, size_t passedMinutes, size_t breakLength ){
+void _Pomodoro_break( Pomodoro *p, size_t passedMinutes, size_t breakLength ){
     if( passedMinutes >= breakLength){
         system("kdialog --msgbox \"Time to work, Zug Zug!\" &");
         p->state = workTime;
@@ -112,17 +112,17 @@ void _pomodoro_break( Pomodoro *p, size_t passedMinutes, size_t breakLength ){
     }
 }
 
-void _pomodoro_update( Pomodoro *p ){ 
+void _Pomodoro_update( Pomodoro *p ){ 
     size_t passedMinutes = (time(NULL) - p->lastBreakPointTime) / 60;
     switch(p->state){
         case( workTime ):
-            _pomodoro_work(p,passedMinutes);
+            _Pomodoro_work(p,passedMinutes);
             break;
         case( breakTime ):
-            _pomodoro_break(p,passedMinutes,p->BREAK_LENGTH);
+            _Pomodoro_break(p,passedMinutes,p->BREAK_LENGTH);
             break;
         case( longBreakTime ):
-           _pomodoro_break(p,passedMinutes,p->LONG_BREAK_LENGTH);
+           _Pomodoro_break(p,passedMinutes,p->LONG_BREAK_LENGTH);
             break;
         case( paused ):
             p->pausedLastTime.tm_sec += 1;
@@ -132,20 +132,20 @@ void _pomodoro_update( Pomodoro *p ){
     }
 }
 
-int pomodoro_start(Arguments args){
-    Pomodoro p = _pomodoro_create(args);
+int Pomodoro_start(Arguments args){
+    Pomodoro p = _Pomodoro_create(args);
     input_setupPoolingInput(); 
     p.state = workTime;
     if( !args.valid )
         return 1;
     while( p.state != quit ){
         TimeKeeper_startTime(&p.keeper);
-        _pomodoro_display(&p);
+        _Pomodoro_display(&p);
         Menu_cycle(&p.menu,&p);
         TimeKeeper_endTimeAndSleep(&p.keeper);
         if( TimeKeeper_hasSecondPassed(&p.keeper) ){
-            _pomodoro_update(&p);
-            _pomodoro_display(&p);
+            _Pomodoro_update(&p);
+            _Pomodoro_display(&p);
         }
     }  
     Menu_destroy(&p.menu);

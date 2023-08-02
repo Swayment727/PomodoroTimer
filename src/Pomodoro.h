@@ -30,5 +30,5 @@ const int BREAK_LENGTH;
 }Pomodoro;
 
 
-int pomodoro_start( Arguments args );
+int Pomodoro_start( Arguments args );
 
