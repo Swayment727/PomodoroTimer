@@ -1,39 +1,34 @@
-TARGET = a.out 
+# A modified version of "Makefile Cookbook" from https://makefiletutorial.com/
 
-CXX = clang 
-MKDIR = mkdir -p
+TARGET_EXEC := pomodoro 
 
-CXXFLAGS = -Wall -pedantic -Wextra 
+BUILD_DIR := ./build
+SRC_DIRS := ./src
 
-SOURCE_DIR = src
-BUILD_DIR = build
-
-SOURCES = $(wildcard $(SOURCE_DIR)/*.c)
-HEADERS = $(wildcard $(SOURCE_DIR)/*.h)
-
-OBJECTS = $(SOURCES:$(SOURCE_DIR)/%.cpp=$(BUILD_DIR)/%.o)
+CC = gcc
+LDFLAGS=
 
 
-.PHONY: all
-all: compile
-	@echo "Finished..."
+SRCS := $(shell find $(SRC_DIRS) -name '*.c')
 
+OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 
-.PHONY: compile
-compile: $(TARGET)
-	@echo "Compile..."
+DEPS := $(OBJS:.o=.d)
 
+INC_DIRS := $(shell find $(SRC_DIRS) -type d)
+INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-.PHONY: run
-run: $(TARGET)
-	./$(TARGET)
+CFLAGS := $(INC_FLAGS) -MMD -MP
 
+$(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
+	$(CC) $(OBJS) -o $@ $(LDFLAGS)
 
-$(TARGET): $(OBJECTS)
-	$(CXX) $^ -o $@
+$(BUILD_DIR)/%.c.o: %.c
+	mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
 
+.PHONY: clean
+clean:
+	rm -r $(BUILD_DIR)
 
-$(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.c
-	$(MKDIR) $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) $< -c -o $@
-
+-include $(DEPS)
