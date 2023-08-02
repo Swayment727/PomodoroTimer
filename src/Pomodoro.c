@@ -10,8 +10,23 @@
 #include "output.h"
 #include "input.h"
 
-int _dummy(void * something){
-    printf("Menu item ran\n");
+int _pomodoro_pause(void * pomodoro){
+    Pomodoro * p = (Pomodoro *)pomodoro;
+    if( p->state != paused ){
+        p->lastState = p->state;
+        p->state = paused;
+        p->pausedLastTime = *localtime(&p->lastBreakPointTime);
+    }
+    return 1;
+}
+
+
+int _pomodoro_unpause(void * pomodoro){
+    Pomodoro * p = (Pomodoro *)pomodoro;
+    if( p->state == paused ){
+        p->state = p->lastState;
+        p->lastBreakPointTime = mktime(&p->pausedLastTime);
+    }
     return 1;
 }
 
@@ -29,7 +44,8 @@ Pomodoro _pomodoro_create( Arguments args ){
                         .workCycles = 0,
                         .breakCycles = 0};
     //TODO: this will leak, since I'm not calling free, add a function to call it from pomodoro
-    Menu_addMenu(&output.menu,"test1",_dummy);
+    Menu_addMenu(&output.menu,"Pause",_pomodoro_pause);
+    Menu_addMenu(&output.menu,"Unpause",_pomodoro_unpause);
     strftime(output.formatedStartTime, sizeof(output.formatedStartTime), "%c",localtime(&currentTime));
     if( currentTime == (time_t)(-1) ){
         output.valid = 0;
@@ -53,7 +69,7 @@ void _pomodoro_display( Pomodoro *p ){
             printf("Long break time: %zu:%zu/%d:00\n",passedSeconds / 60, passedSeconds % 60, p->LONG_BREAK_LENGTH);
             break;
         case( paused ):
-            printf("Paused");
+            printf("Paused\n");
             break;
         default:
             break;
@@ -102,6 +118,7 @@ void _pomodoro_update( Pomodoro *p ){
            _pomodoro_break(p,passedMinutes,p->LONG_BREAK_LENGTH);
             break;
         case(paused):
+            p->pausedLastTime.tm_sec += 1;
             break;
         default:
             break;

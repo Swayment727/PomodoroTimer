@@ -14,7 +14,7 @@ void Menu_addMenu(Menu* menu, const char * description, int(*operation)(void*)){
         menu->cnt += 5;
         menu->lines = realloc(menu->lines, sizeof(*menu->lines) * menu->cnt);
     }
-    MenuItem item = {.description=description, operation=operation};
+    MenuItem item = {.description=description, .operation=operation};
     menu->lines[menu->current++] = item;
 }
 

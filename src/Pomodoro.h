@@ -11,6 +11,7 @@ enum PomodoroState {inactive, paused,quit, workTime,breakTime,longBreakTime};
 typedef struct Pomodoro{
     char formatedStartTime[128];
     time_t lastBreakPointTime;
+    struct tm pausedLastTime;
     size_t totalWorkTime;
 
     TimeKeeper keeper;
